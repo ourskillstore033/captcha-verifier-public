@@ -33,6 +33,61 @@ async function loadCaptcha() {
       drawCaptcha(data.text);
     }
 
+    if (currentType === "image") {
+  const selected = [...document.querySelectorAll("#imageGrid img")]
+    .map((img, i) => img.classList.contains("selected") ? i : null)
+    .filter(v => v !== null);
+
+  const res = await fetch(API_URL + "/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id: currentId,
+      answer: selected
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.success) showSuccess();
+  else showError("Wrong selection ❌");
+
+  return;
+}
+
+    if (Array.isArray(captcha.answer)) {
+  const isValid = JSON.stringify(captcha.answer.sort()) === JSON.stringify(answer.sort());
+  delete captchas[id];
+  return res.json({ success: isValid });
+}
+
+
+    if (currentType === "image") {
+  document.getElementById("imageBox").style.display = "block";
+
+  const res = await fetch(API_URL + "/captcha/image");
+  const data = await res.json();
+
+  currentId = data.id;
+  document.getElementById("imageQuestion").innerText = data.question;
+
+  const grid = document.getElementById("imageGrid");
+  grid.innerHTML = "";
+
+  data.images.forEach((img, index) => {
+    const el = document.createElement("img");
+    el.src = img.url;
+    el.style.width = "100%";
+    el.style.cursor = "pointer";
+
+    el.onclick = () => {
+      el.classList.toggle("selected");
+      el.style.border = el.classList.contains("selected") ? "3px solid green" : "none";
+    };
+
+    grid.appendChild(el);
+  });
+}
     if (currentType === "math") {
       // Show math, hide canvas
       canvas.style.display = "none";
